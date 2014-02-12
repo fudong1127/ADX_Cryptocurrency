@@ -21,8 +21,8 @@ def collectRaw():
 			datapoints.append(temp)
 			time.sleep(58)
 		except:
-			print "exception lol"
-			#continue
+			print "exception"
+			continue
 	#exit loop when all 60 are a gathered
 	maxPoint = max(datapoints)
 	minPoint = min(datapoints)
