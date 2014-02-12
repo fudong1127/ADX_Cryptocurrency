@@ -12,3 +12,12 @@ How to Use
   - run 'python3 -i adx.py'
   - type command in >>> runThis()
   
+
+Collaborators/Authors
+---------------------
+Spencer Scolnick - sscolnick@umich.com
+Myles Scolnick - mscolnick@gmail.com
+
+
+Donate
+------
