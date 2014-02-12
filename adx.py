@@ -127,7 +127,7 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				dogeBalance = cr.getInfo()['return']['balances_available']['DOGE']
 			time.sleep(5)
 			cr.cancelAllOrders()
-			if(btcBalance > .01):
+			if(dogeBalance > 3000):
 				print "Cancled Orders: Redoing excecute stage"
 				excecute(direction, current_trendExist, APIKey, Secret)
 	else:
