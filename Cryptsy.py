@@ -8,7 +8,7 @@ def createTimeStamp(datestr, format="%Y-%m-%d %H:%M:%S"):
     return time.mktime(time.strptime(datestr, format))
 
 class Cryptsy:
-    def __init__(self, APIKey = a33d1218dff1c8f6fee41f687f76f12bc6d1fd62, Secret = 9b21a985a6cd5519f4962a020516fed5e6729c203e140c52d3dd06e4468d8477d0dafefefd82faf8):
+    def __init__(self, APIKey, Secret):
         self.APIKey = APIKey
         self.Secret = Secret
 
