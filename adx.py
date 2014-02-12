@@ -1,4 +1,4 @@
-# from Cryptsy import Cryptsy
+from Cryptsy import Cryptsy
 import csv
 import urllib
 import urllib2
@@ -8,10 +8,11 @@ import datetime
 import threading
 from time import gmtime, strftime
 
-
+#globals-----
+marketid = 132
 
 #TODO: call this at the new hour
-def collectRaw():
+def collectRaw(APIKey, Secret):
 	timeStamp = strftime("%d %b %H:%M", gmtime())
 	datapoints = []
 	temp = 0
@@ -28,13 +29,12 @@ def collectRaw():
 	minPoint = min(datapoints)
 	closePoint = datapoints[-1]
 	openPoint = datapoints[0]   # first element of hour; NOT close of previous hour
-	start(openPoint, maxPoint, minPoint, closePoint, timeStamp)
+	start(openPoint, maxPoint, minPoint, closePoint, timeStamp, APIKey, Secret)
 
 #returns the last publically excecuted trade
 def collectRawHelper():
 	#TODO get last publically excecuted trade
 	method = "singlemarketdata"
-	marketid = 132
 	ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
 	pri = json.loads(ret.read())['return']['markets']['DOGE']['recenttrades'][0]['price']
 	return float(pri)
@@ -94,19 +94,49 @@ def decision(plusDI14,minusDI14, ADX, previous_trendExist):
 	return direction, current_trendExist
 
 
-def execute(direction, current_trendExist):
+def execute(direction, current_trendExist, APIKey, Secret):
+	cr = Cryptsy(APIKey, Secret)
+	method = "singleorderdata"
+	orderIds= ""
 	if (current_trendExist == "newTrend"):
 		if (direction == "Up"):
 			action = "Buy"
+			btcBalance = cr.getInfo()['return']['balances_available']['BTC']
+			while(btcBalance > .01):
+				ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
+				topTrade = json.loads(ret.read())['return']['DOGE']['sellorders'][0]
+				tradePrice = topTrade['price']
+				amount = min((btcBalance*.998)/tradePrice, topTrade['total'])
+				orderid = cr.createOrder(marketid, "Buy", amount, tradePrice)
+				orderIds = orderIds + "-" + orderid
+				btcBalance = cr.getInfo()['return']['balances_available']['BTC']
+			time.sleep(5)
+			cr.cancelAllOrders()
+			if(btcBalance > .01):
+				print "Cancled Orders: Redoing excecute stage"
+				excecute(direction, current_trendExist, APIKey, Secret)
 		else:
 			action = "Sell"
+			dogeBalance = cr.getInfo()['return']['balances_available']['DOGE']
+			while(dogeBalance > 3000):
+				ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
+				topTrade = json.loads(ret.read())['return']['DOGE']['buyorders'][0]
+				amount = min(dogeBalance, topTrade['quantity'])
+				orderid = cr.createOrder(marketid, "Sell", amount, topTrade['price'])
+				orderIds = orderIds + "-" + orderid
+				dogeBalance = cr.getInfo()['return']['balances_available']['DOGE']
+			time.sleep(5)
+			cr.cancelAllOrders()
+			if(btcBalance > .01):
+				print "Cancled Orders: Redoing excecute stage"
+				excecute(direction, current_trendExist, APIKey, Secret)
 	else:
 		action = "Hold"
-	return action
+	return action + ": " + orderIds
 
 
 #start at new hour
-def start(openPoint, high, low, closePoint, timeStamp):
+def start(openPoint, high, low, closePoint, timeStamp, APIKey, Secret):
 	lastRow = []
 
 	with open('ADX.csv','r+') as f:
@@ -139,7 +169,7 @@ def start(openPoint, high, low, closePoint, timeStamp):
 	direction, current_trendExist = decision(plusDI14,minusDI14, ADX, previous_trendExist)
 		#write to csv
 
-	action = execute(direction, current_trendExist)
+	action = execute(direction, current_trendExist, APIKey, Secret)
 
 	with open('ADX.csv','a+') as f:
 
@@ -186,9 +216,9 @@ def start(openPoint, high, low, closePoint, timeStamp):
 		
 	print "New line added at " + timeStamp
 
-def runThis():
+def runThis(APIKey, Secret):
 	while True:
-		collectRaw()
+		collectRaw(APIKey, Secret)
 
 
 
