@@ -21,7 +21,7 @@ def collectRaw():
 			datapoints.append(temp)
 			time.sleep(58)
 		except:
-			print "exception"
+			print "exception" + strftime("%d %b %H:%M", gmtime())
 			continue
 	#exit loop when all 60 are a gathered
 	maxPoint = max(datapoints)
@@ -183,6 +183,8 @@ def start(openPoint, high, low, closePoint, timeStamp):
 		f.write(str(direction))
 		f.write(',')
 		f.write(str(action))
+		
+	print "New line added" + timeStamp
 
 def runThis():
 	while True:
