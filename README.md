@@ -21,6 +21,6 @@ Collaborators/Authors
 
 Donate
 ------
-- BTC   14C2RtCMWPGoo1r6EurLVgmnZFZqjGNkKu
-- DOGE  D8k6cf2B38XtjPiad3jw5BPxQzuZPmHj8k
-- LTC   LXAJTKzYZd8boUmSyJPcRSejLfiJvAJWck
+- BTC:  14C2RtCMWPGoo1r6EurLVgmnZFZqjGNkKu
+- DOGE: D8k6cf2B38XtjPiad3jw5BPxQzuZPmHj8k
+- LTC:  XAJTKzYZd8boUmSyJPcRSejLfiJvAJWck
