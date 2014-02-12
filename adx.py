@@ -108,7 +108,7 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				tradePrice = topTrade['price']
 				amount = min((btcBalance*.998)/tradePrice, topTrade['total'])
 				orderid = cr.createOrder(marketid, "Buy", amount, tradePrice)
-				orderIds = orderIds + "-" + orderid
+				orderIds = orderIds + '-' + str(orderid)
 				btcBalance = cr.getInfo()['return']['balances_available']['BTC']
 			time.sleep(5)
 			cr.cancelAllOrders()
@@ -123,7 +123,7 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				topTrade = json.loads(ret.read())['return']['DOGE']['buyorders'][0]
 				amount = min(dogeBalance, topTrade['quantity'])
 				orderid = cr.createOrder(marketid, "Sell", amount, topTrade['price'])
-				orderIds = orderIds + "-" + orderid
+				orderIds = orderIds + '-' + str(orderid)
 				dogeBalance = cr.getInfo()['return']['balances_available']['DOGE']
 			time.sleep(5)
 			cr.cancelAllOrders()
