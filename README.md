@@ -15,9 +15,11 @@ How to Use
 
 Collaborators/Authors
 ---------------------
-Spencer Scolnick - sscolnick@umich.com
+Spencer Scolnick - sscolnick@gmail.com
 Myles Scolnick - mscolnick@gmail.com
 
 
 Donate
 ------
+BTC   14C2RtCMWPGoo1r6EurLVgmnZFZqjGNkKu
+DOGE  D8k6cf2B38XtjPiad3jw5BPxQzuZPmHj8k
