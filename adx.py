@@ -115,12 +115,20 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				amount = min((btcBalance)*.99, float(topTrade['total']))
 				amount = amount/tradePrice
 				orderid = cr.createOrder(marketid, "Buy", amount, tradePrice)
+<<<<<<< HEAD
 				#orderIds = orderIds + "-" + orderid
 				btcBalance = float(cr.getInfo()['return']['balances_available']['BTC'])
 			pause(5)
 			if (cr.myOrders(marketid)['return']!=[]):
 				cr.cancelAllOrders()
 				pause(10)
+=======
+				orderIds = orderIds + '-' + str(orderid)
+				btcBalance = cr.getInfo()['return']['balances_available']['BTC']
+			time.sleep(5)
+			cr.cancelAllOrders()
+			if(btcBalance > .01):
+>>>>>>> 24c10975bc2627254a15243c07934b6f75e6e4c2
 				print "Cancled Orders: Redoing excecute stage"
 				execute(direction, current_trendExist, APIKey, Secret)
 				
@@ -138,12 +146,20 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				topTrade = json.loads(ret.read())['return']['DOGE']['buyorders'][1]
 				amount = min(dogeBalance*.99, float(topTrade['quantity']))
 				orderid = cr.createOrder(marketid, "Sell", amount, topTrade['price'])
+<<<<<<< HEAD
 				#orderIds = orderIds + "-" + orderid
 				dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
 			pause(5)
 			if (cr.myOrders(marketid)['return']!=[]):
 				cr.cancelAllOrders()
 				pause(10)
+=======
+				orderIds = orderIds + '-' + str(orderid)
+				dogeBalance = cr.getInfo()['return']['balances_available']['DOGE']
+			time.sleep(5)
+			cr.cancelAllOrders()
+			if(dogeBalance > 3000):
+>>>>>>> 24c10975bc2627254a15243c07934b6f75e6e4c2
 				print "Cancled Orders: Redoing excecute stage"
 				execute(direction, current_trendExist, APIKey, Secret)
 	else:
