@@ -7,6 +7,7 @@ import time
 import datetime
 import threading
 from time import localtime, strftime, time, sleep
+import smtplib
 
 #globals-----
 marketid = 132
@@ -123,6 +124,7 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				pause(10)
 				print "Cancled Orders: Redoing excecute stage"
 				execute(direction, current_trendExist, APIKey, Secret)
+			sendText(action)
 				
 		else:
 			action = "Sell"
@@ -146,6 +148,7 @@ def execute(direction, current_trendExist, APIKey, Secret):
 				pause(10)
 				print "Cancled Orders: Redoing excecute stage"
 				execute(direction, current_trendExist, APIKey, Secret)
+			sendText(action)
 	else:
 		action = "Hold"
 	return action #+ ": " + orderIds
@@ -241,5 +244,15 @@ def pause(n):
 	while (time() - start < n):
 		sleep(n - (time() - start))
 
+def sendText(action):
+	message = "You should " + action + " bitcoin!"
+
+	server = smtplib.SMTP("smtp.gmail.com", 587)
+	server.starttls()
+	server.login("btctext9@gmail.com","26kDiwo3lP!K4&g")
+	server.sendmail("btctext9@gmail.com", "3038754511@txt.att.net", message)
+	server.sendmail("btctext9@gmail.com", "sscolnick@gmail.com", message)
+	#server.sendmail("btctext9@gmail.com", "3032500788@txt.att.net", message)
+	server.quit()
 
 
