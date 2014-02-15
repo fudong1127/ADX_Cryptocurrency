@@ -99,58 +99,58 @@ def execute(direction, current_trendExist, APIKey, Secret):
 	cr = Cryptsy(APIKey, Secret)
 	method = "singleorderdata"
 	#orderIds= ""
-	if (current_trendExist == "newTrend"):
-		if (direction == "Up"):
-			action = "Buy"
+	if (current_trendExist == "newTrend" and direction == "Up"):
+		action = "Buy"
+		btcBalance = float(cr.getInfo()['return']['balances_available']['BTC'])
+		while(btcBalance > .01):
+			ret = ""
+			while(ret == ""):
+				try:
+					ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
+				except:
+					continue
+
+			topTrade = json.loads(ret.read())['return']['DOGE']['sellorders'][1]
+			tradePrice = float(topTrade['price'])
+			amount = min((btcBalance)*.99, float(topTrade['total']))
+			amount = amount/tradePrice
+			orderid = cr.createOrder(marketid, "Buy", amount, tradePrice)
+			#orderIds = orderIds + "-" + orderid
 			btcBalance = float(cr.getInfo()['return']['balances_available']['BTC'])
-			while(btcBalance > .01):
-				ret = ""
-				while(ret == ""):
-					try:
-						ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
-					except:
-						continue
+		pause(5)
+		if (cr.myOrders(marketid)['return']!=[]):
+			cr.cancelAllOrders()
+			pause(10)
+			print "Cancled Orders: Redoing excecute stage"
+			execute(direction, current_trendExist, APIKey, Secret)
+		sendText(action)
 
-				topTrade = json.loads(ret.read())['return']['DOGE']['sellorders'][1]
-				tradePrice = float(topTrade['price'])
-				amount = min((btcBalance)*.99, float(topTrade['total']))
-				amount = amount/tradePrice
-				orderid = cr.createOrder(marketid, "Buy", amount, tradePrice)
-				#orderIds = orderIds + "-" + orderid
-				btcBalance = float(cr.getInfo()['return']['balances_available']['BTC'])
-			pause(5)
-			if (cr.myOrders(marketid)['return']!=[]):
-				cr.cancelAllOrders()
-				pause(10)
-				print "Cancled Orders: Redoing excecute stage"
-				execute(direction, current_trendExist, APIKey, Secret)
-			sendText(action)
-				
-		else:
-			action = "Sell"
-			dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
-			while(dogeBalance > 3000):
-				ret = ""
-				while(ret == ""):
-					try:
-						ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
-					except:
-						continue
-
-				topTrade = json.loads(ret.read())['return']['DOGE']['buyorders'][1]
-				amount = min(dogeBalance*.99, float(topTrade['quantity']))
-				orderid = cr.createOrder(marketid, "Sell", amount, topTrade['price'])
-				#orderIds = orderIds + "-" + orderid
-				dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
-			pause(5)
-			if (cr.myOrders(marketid)['return']!=[]):
-				cr.cancelAllOrders()
-				pause(10)
-				print "Cancled Orders: Redoing excecute stage"
-				execute(direction, current_trendExist, APIKey, Secret)
-			sendText(action)
 	else:
 		action = "Hold"
+		dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
+		while(dogeBalance > 3000):
+			action = "Sell"
+			ret = ""
+			while(ret == ""):
+				try:
+					ret = urllib2.urlopen(urllib2.Request('http://pubapi.cryptsy.com/api.php?method=' + method + '&marketid=' + str(marketid)))
+				except:
+					continue
+
+			topTrade = json.loads(ret.read())['return']['DOGE']['buyorders'][1]
+			amount = min(dogeBalance*.99, float(topTrade['quantity']))
+			orderid = cr.createOrder(marketid, "Sell", amount, topTrade['price'])
+			#orderIds = orderIds + "-" + orderid
+			dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
+			pause(2)
+		pause(5)
+		if (cr.myOrders(marketid)['return']!=[]):
+			cr.cancelAllOrders()
+			pause(10)
+			print "Cancled Orders: Redoing excecute stage"
+			execute(direction, current_trendExist, APIKey, Secret)
+		sendText(action)
+
 	return action #+ ": " + orderIds
 
 

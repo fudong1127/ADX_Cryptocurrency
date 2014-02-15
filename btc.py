@@ -91,21 +91,21 @@ def decision(plusDI14,minusDI14, ADX, previous_trendExist):
 				current_trendExist = "newTrend"
 	else:
 		current_trendExist = "noTrend"
-	return direction, current_trendExist
+	return direction, current_trendExist, previous_trendExist
 
 #Put in email and text alert
-def execute(direction, current_trendExist):
-	if (current_trendExist == "newTrend"):
-		if (direction == "Up"):
-			action = "Buy"
-			sendText(action)
-				
-		else:
-			action = "Sell"
-			sendText(action)
+def execute(direction, current_trendExist, previous_trendExist):
+	if (current_trendExist == "newTrend" and direction == "Up"):
+		action = "Buy"
+		sendText(action)
 		
+	elif (previous_trendExist == "currentTrend"):
+		action = "Sell"
+		sendText(action)
+	
 	else:
 		action = "Hold"
+
 	return action
 
 
