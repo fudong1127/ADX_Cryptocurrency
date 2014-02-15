@@ -24,6 +24,7 @@ def collectRaw():
 		except:
 			print "Exception at " + strftime("%d %b %H:%M", localtime())
 			continue
+		print len(datapoints)
 	#exit loop when all 60 are a gathered
 	maxPoint = max(datapoints)
 	minPoint = min(datapoints)
