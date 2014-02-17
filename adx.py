@@ -144,13 +144,14 @@ def execute(direction, current_trendExist, APIKey, Secret):
 			#orderIds = orderIds + "-" + orderid
 			dogeBalance = float(cr.getInfo()['return']['balances_available']['DOGE'])
 			pause(2)
+			sendText(action)
 		pause(5)
 		if (cr.myOrders(marketid)['return']!=[]):
 			cr.cancelAllOrders()
 			pause(10)
 			print "Cancled Orders: Redoing excecute stage"
 			execute(direction, current_trendExist, APIKey, Secret)
-		sendText(action)
+		
 
 	return action #+ ": " + orderIds
 
@@ -246,7 +247,7 @@ def pause(n):
 		sleep(n - (time() - start))
 
 def sendText(action):
-	message = "You should " + action + " bitcoin!"
+	message = "You should " + action + " dogecoin!"
 
 	server = smtplib.SMTP("smtp.gmail.com", 587)
 	server.starttls()
