@@ -11,189 +11,108 @@ import smtplib
 
 
 
-
-def collectRaw():
-	timeStamp = strftime("%d %b %H:%M", localtime())
-	datapoints = []
-	temp = 0
-	while len(datapoints) < 60:
+#Get to run at the top of every hour
+def collectRaw(delay):
+	pause(delay)
+	ret = ""
+	while (ret == ""):
 		try:
-			temp = collectRawHelper()
-			datapoints.append(temp)
-			pause(58)
+			ret = urllib2.urlopen(urllib2.Request('https://api.coindesk.com/v1/bpi/currentprice.json'))
 		except:
 			print "Exception at " + strftime("%d %b %H:%M", localtime())
 			continue
-		print len(datapoints)
-	#exit loop when all 60 are a gathered
-	maxPoint = max(datapoints)
-	minPoint = min(datapoints)
-	closePoint = datapoints[-1]
-	openPoint = datapoints[0]   # first element of hour; NOT close of previous hour
-	start(openPoint, maxPoint, minPoint, closePoint, timeStamp)
-
-#returns the last publically excecuted trade
-def collectRawHelper():
-	#TODO get last publically excecuted trade
-	method = "/prices/spot_rate"
-	ret = urllib2.urlopen(urllib2.Request('https://coinbase.com/api/v1' + method))
-	pri = json.loads(ret.read())['amount']
-	return float(pri)
+	pri = json.loads(ret.read())['bpi']['USD']['rate']
+	timeStamp = strftime("%d %b %H:%M", localtime())
+	print "The price is " + pri + " at " + timeStamp + "."
+	pri = float(pri)
+	start(pri, timeStamp)
 
 
 #takes in high/low/openPoint/prev_high/prev_low
 #returns plusDM1 and Minus DM1
-def trend1(openPoint,high,low,prev_high,prev_low):
-	tr1 = max(high - low,abs(high - openPoint),abs(low - openPoint))
-	# Calculate +DM1 and -DM1
-	if (high - prev_high)>(prev_low - low):
-		minusDM1 = 0
-		if (high-prev_high)>0:
-			plusDM1 = high - prev_high
-		else:
-			plusDM1 = 0
-	else:
-		plusDM1 = 0
-		if (prev_low - low)>0:
-			minusDM1 = prev_low - low
-		else:
-			minusDM1 = 0
-	return tr1, plusDM1, minusDM1
+def S_t(pri, prev_S):
+	smoothing = 3 #This can change depending on research
+	current_S = pri*2/(smoothing+1)+prev_S*(1-2/(smoothing+1))
+	return current_S
 
-#takes in prev_tr14/prev_minusDM14/prev_plusDM14/tr1, plusDM1, minusDM1
-#returns plusDM14 and minus DM14
-def trend14(tr1, plusDM1, minusDM1, prev_tr14,prev_plusDM14,prev_minusDM14):
-	tr14 = (prev_tr14*13/14)+tr1
-	minusDM14 = (prev_minusDM14*13/14)+minusDM1
-	plusDM14 = (prev_plusDM14*13/14)+plusDM1
-	return tr14, plusDM14, minusDM14
+def V_t(prev_S, current_S):
+	current_V = current_S - prev_S
+	return current_V
 
+def A_t(current_V, prev_V, prev_A):
+	temp = current_V - prev_V
+	smoothing = 7 #This can change depending on research
+	current_A = temp*2/(smoothing+1)+prev_A*(1-2/(smoothing+1))
+	return temp, current_A
 
-def adx(tr14, plusDM14, minusDM14, prev_ADX):
-	plusDI14 = plusDM14/tr14*100
-	minusDI14 = minusDM14/tr14*100
-	diffDI14 = abs(plusDI14-minusDI14)
-	sumDI14 = plusDI14+minusDI14
-	DX = (diffDI14/sumDI14)*100
-	ADX = (prev_ADX*13+DX)/14
-	return plusDI14, minusDI14, diffDI14, sumDI14, DX, ADX
-
-
-def decision(plusDI14,minusDI14, ADX, previous_trendExist):
-	if (plusDI14>minusDI14):
-		direction = "Up"
-	else:
-		direction = "Down"
-
-	if (ADX > 25):
-		if (previous_trendExist == "newTrend"    or   previous_trendExist == "currentTrend"):
-				current_trendExist = "currentTrend"
-		else:
-				current_trendExist = "newTrend"
-	else:
-		current_trendExist = "noTrend"
-	return direction, current_trendExist, previous_trendExist
-
-#Put in email and text alert
-def execute(direction, current_trendExist, previous_trendExist):
-	if (current_trendExist == "newTrend" and direction == "Up"):
+def decision(pri, current_S, current_V, current_A, prev_action):
+	if (pri > current_S and current_V > 0 and current_A > 0):
 		action = "Buy"
 		sendText(action)
-		
-	elif (previous_trendExist == "currentTrend"):
+
+	elif (pri < current_S and current_V < 0 and current_A < 0):
 		action = "Sell"
 		sendText(action)
-	
+
 	else:
-		action = "Hold"
+		action = prev_action
 
 	return action
 
 
 #start at new hour
-def start(openPoint, high, low, closePoint, timeStamp):
+def start(pri, timeStamp):
 	lastRow = []
 
-	with open('BTC.csv','r+') as f:
+	with open('EMA.csv','r+') as f:
 		file = csv.reader(f)
 		for row in file:
 			last = row
-
 	lastRow.append(last)
-
 	flattened_list = [y for x in lastRow for y in x]
 
-		#write to csv
+	prev_S = float(flattened_list[2])
+	print prev_S
+	print pri
+	current_S = S_t(pri, prev_S)
 
-	prev_high = float(flattened_list[2])
-	prev_low = float(flattened_list[3])
-	tr1, plusDM1, minusDM1 = trend1(openPoint, high, low, prev_high, prev_low)
-		#write to csv
+	current_V = V_t(prev_S, current_S)
 
-	prev_tr14 = float(flattened_list[8])
-	prev_minusDM14 = float(flattened_list[10])
-	prev_plusDM14 = float(flattened_list[9])
-	tr14, plusDM14, minusDM14 = trend14(tr1, plusDM1, minusDM1, prev_tr14,prev_plusDM14,prev_minusDM14);
-		#write to csv
+	prev_A = float(flattened_list[6])
+	prev_V = float(flattened_list[3])
+	print prev_V
+	print prev_A
+	temp, current_A = A_t(current_V, prev_V, prev_A)
 
-	prev_ADX = float(flattened_list[16])
-	plusDI14, minusDI14, diffDI14, sumDI14, DX, ADX = adx(tr14, plusDM14, minusDM14, prev_ADX)
-		#write to csv
+	prev_action = flattened_list[7]
+	action = decision(pri, current_S, current_V, current_A, prev_action)
 
-	previous_trendExist = flattened_list[17]
-	direction, current_trendExist = decision(plusDI14,minusDI14, ADX, previous_trendExist)
-		#write to csv
-
-	action = execute(direction, current_trendExist)
-
-	with open('BTC.csv','a+') as f:
+	with open('EMA.csv','a+') as f:
 
 		f.write('\n')
 		f.write(str(timeStamp))
 		f.write(',')
-		f.write(str(openPoint))
+		f.write(str(pri))
 		f.write(',')
-		f.write(str(high))
+		f.write(str(current_S))
 		f.write(',')
-		f.write(str(low))
+		f.write(str(current_V))
 		f.write(',')
-		f.write(str(closePoint))
+		f.write(str(current_V))
 		f.write(',')
-		f.write(str(tr1))
+		f.write(str(temp))
 		f.write(',')
-		f.write(str(plusDM1))
-		f.write(',')
-		f.write(str(minusDM1))
-		f.write(',')
-		f.write(str(tr14))
-		f.write(',')
-		f.write(str(plusDM14))
-		f.write(',')
-		f.write(str(minusDM14))
-		f.write(',')
-		f.write(str(plusDI14))
-		f.write(',')
-		f.write(str(minusDI14))
-		f.write(',')
-		f.write(str(diffDI14))
-		f.write(',')
-		f.write(str(sumDI14))
-		f.write(',')
-		f.write(str(DX))
-		f.write(',')
-		f.write(str(ADX))
-		f.write(',')
-		f.write(str(current_trendExist))
-		f.write(',')
-		f.write(str(direction))
+		f.write(str(current_A))
 		f.write(',')
 		f.write(str(action))
-		
+				
 	print "New line added at " + timeStamp
 
-def runThis():
+	pause(40)
+
+def runThis(delay):
 	while True:
-		collectRaw()
+		collectRaw(delay)
 
 def pause(n):
 	start = time()
