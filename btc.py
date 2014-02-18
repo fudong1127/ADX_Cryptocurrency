@@ -12,8 +12,9 @@ import smtplib
 
 
 #Get to run at the top of every hour
-def collectRaw(delay):
-	pause(delay)
+def collectRaw(min):
+	sec = min*60
+	pause(sec)
 	ret = ""
 	while (ret == ""):
 		try:
@@ -31,8 +32,8 @@ def collectRaw(delay):
 #takes in high/low/openPoint/prev_high/prev_low
 #returns plusDM1 and Minus DM1
 def S_t(pri, prev_S):
-	smoothing = 3 #This can change depending on research
-	current_S = pri*2/(smoothing+1)+prev_S*(1-2/(smoothing+1))
+	smoothing = 3.0 #This can change depending on research
+	current_S = pri*2.0/(smoothing+1.0)+prev_S*(1.0-2.0/(smoothing+1.0))
 	return current_S
 
 def V_t(prev_S, current_S):
@@ -41,18 +42,18 @@ def V_t(prev_S, current_S):
 
 def A_t(current_V, prev_V, prev_A):
 	temp = current_V - prev_V
-	smoothing = 7 #This can change depending on research
-	current_A = temp*2/(smoothing+1)+prev_A*(1-2/(smoothing+1))
+	smoothing = 7.0 #This can change depending on research
+	current_A = temp*2.0/(smoothing+1.0)+prev_A*(1.0-2.0/(smoothing+1.0))
 	return temp, current_A
 
 def decision(pri, current_S, current_V, current_A, prev_action):
 	if (pri > current_S and current_V > 0 and current_A > 0):
 		action = "Buy"
-		sendText(action)
+		#sendText(action)
 
 	elif (pri < current_S and current_V < 0 and current_A < 0):
 		action = "Sell"
-		sendText(action)
+		#sendText(action)
 
 	else:
 		action = prev_action
@@ -108,11 +109,11 @@ def start(pri, timeStamp):
 				
 	print "New line added at " + timeStamp
 
-	pause(40)
+	pause(3598)
 
-def runThis(delay):
+def runThis(min):
 	while True:
-		collectRaw(delay)
+		collectRaw(min)
 
 def pause(n):
 	start = time()
