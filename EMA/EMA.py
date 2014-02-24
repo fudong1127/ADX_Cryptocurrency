@@ -5,7 +5,7 @@ import json
 import time
 import datetime
 import threading
-from time import localtime, strftime, time, sleep
+from time import gmtime, strftime, time, sleep
 import smtplib
 
 
@@ -20,10 +20,10 @@ def collectRaw(min):
 		try:
 			ret = urllib2.urlopen(urllib2.Request('https://api.coindesk.com/v1/bpi/currentprice.json'))
 		except:
-			print "Exception at " + strftime("%d %b %H:%M", localtime())
+			print "Exception at " + strftime("%d %b %H:%M", gmtime())
 			continue
 	pri = json.loads(ret.read())['bpi']['USD']['rate']
-	timeStamp = strftime("%d %b %H:%M", localtime())
+	timeStamp = strftime("%d %b %H:%M", gmtime())
 	print "The price is " + pri + " at " + timeStamp + "."
 	pri = float(pri)
 	start(pri, timeStamp)
@@ -73,20 +73,17 @@ def start(pri, timeStamp):
 	flattened_list = [y for x in lastRow for y in x]
 
 	prev_S = float(flattened_list[2])
-	print prev_S
-	print pri
 	current_S = S_t(pri, prev_S)
 
 	current_V = V_t(prev_S, current_S)
 
 	prev_A = float(flattened_list[6])
 	prev_V = float(flattened_list[3])
-	print prev_V
-	print prev_A
 	temp, current_A = A_t(current_V, prev_V, prev_A)
 
 	prev_action = flattened_list[7]
 	action = decision(pri, current_S, current_V, current_A, prev_action)
+	print action
 
 	with open('EMA.csv','a+') as f:
 
@@ -109,7 +106,7 @@ def start(pri, timeStamp):
 				
 	print "New line added at " + timeStamp
 
-	pause(3598)
+	pause(3600)
 
 def runThis(min):
 	while True:
