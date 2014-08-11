@@ -131,10 +131,10 @@ def sendText(action):
 
 	server = smtplib.SMTP("smtp.gmail.com", 587)
 	server.starttls()
-	server.login("btctext9@gmail.com","26kDiwo3lP!K4&g")
-	server.sendmail("btctext9@gmail.com", "3038754511@txt.att.net", message)
-	server.sendmail("btctext9@gmail.com", "sscolnick@gmail.com", message)
-	#server.sendmail("btctext9@gmail.com", "3032500788@txt.att.net", message)
+	server.login("btctext9@gmail.com","")
+	server.sendmail("btctext9@gmail.com", "", message)
+	server.sendmail("btctext9@gmail.com", "", message)
+	#server.sendmail("btctext9@gmail.com", "", message)
 	server.quit()
 
 
